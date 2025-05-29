@@ -63,8 +63,8 @@ ceval_lepton_sf = correctionlib.CorrectionSet.from_file(cfg["leptonSF"])
 ceval_assign_run = correctionlib.CorrectionSet.from_file(cfg["run_to_era"])
 
 cset_trigger = correctionlib.CorrectionSet.from_file(cfg["triggerSF"])
-# jec_stack = getJetCorrections(cfg)
-rochester = getRochester(cfg)
+jec_stack = getJetCorrections(cfg)
+#rochester = getRochester(cfg)
 
 analysis_path = sys.argv[1]
 analysis_cfg = get_analysis_dict(analysis_path)
@@ -149,7 +149,7 @@ def process(events, **kwargs):
     # FIXME should clean from only tight / loose?
     events = cleanJet(events)
 
-    # Require at least one good PV
+    # Require at least one good PV (tolgo)
     events = events[events.PV.npvsGood > 0]
 
     if kwargs.get("top_pt_rwgt", False):
@@ -178,8 +178,8 @@ def process(events, **kwargs):
         ) + (toppt * atoppt <= 0.0)
         events["weight"] = events.weight * top_pt_rwgt
 
-    # Remove jets HEM issue
-    events = remove_jets_HEM_issue(events, cfg)
+    # Remove jets HEM issue (via)
+    #events = remove_jets_HEM_issue(events, cfg)
 
     # # Jet veto maps
     events = jet_veto(events, cfg)
@@ -188,7 +188,7 @@ def process(events, **kwargs):
     # Should load SF and corrections here
 
     # # Correct Muons with rochester
-    events = correctRochester(events, isData, rochester)
+    #events = correctRochester(events, isData, rochester)
 
     if not isData:
         # puWeight
@@ -211,37 +211,37 @@ def process(events, **kwargs):
         )
 
         # puId SF
-        events, variations = puid_sf(events, variations, ceval_puid, cfg)
+        #events, variations = puid_sf(events, variations, ceval_puid, cfg)
 
         # btag SF
         events, variations = btag_sf(events, variations, ceval_btag, cfg)
 
         # prefire
 
-        if "L1PreFiringWeight" in ak.fields(events):
-            events["prefireWeight"] = events.L1PreFiringWeight.Nom
-            events["prefireWeight_up"] = events.L1PreFiringWeight.Up
-            events["prefireWeight_down"] = events.L1PreFiringWeight.Dn
+        # if "L1PreFiringWeight" in ak.fields(events):
+        #     events["prefireWeight"] = events.L1PreFiringWeight.Nom
+        #     events["prefireWeight_up"] = events.L1PreFiringWeight.Up
+        #     events["prefireWeight_down"] = events.L1PreFiringWeight.Dn
 
-            variations.register_variation(
-                columns=["prefireWeight"],
-                variation_name="prefireWeight_up",
-                format_rule=lambda _, var_name: var_name,
-            )
-            variations.register_variation(
-                columns=["prefireWeight"],
-                variation_name="prefireWeight_down",
-                format_rule=lambda _, var_name: var_name,
-            )
-        else:
-            events["prefireWeight"] = ak.ones_like(events.weight)
+        #     variations.register_variation(
+        #         columns=["prefireWeight"],
+        #         variation_name="prefireWeight_up",
+        #         format_rule=lambda _, var_name: var_name,
+        #     )
+        #     variations.register_variation(
+        #         columns=["prefireWeight"],
+        #         variation_name="prefireWeight_down",
+        #         format_rule=lambda _, var_name: var_name,
+        #     )
+        # else:
+        #     events["prefireWeight"] = ak.ones_like(events.weight)
 
-        # Theory unc.
-        doTheoryVariations = special_analysis_cfg.get(
-            "do_theory_variations", True
-        ) and (dataset == "Zjj" or "DY" in dataset)
-        if doTheoryVariations:
-            events, variations = theory_unc(events, variations)
+        # # Theory unc.
+        # doTheoryVariations = special_analysis_cfg.get(
+        #     "do_theory_variations", True
+        # ) and (dataset == "Zjj" or "DY" in dataset)
+        # if doTheoryVariations:
+        #     events, variations = theory_unc(events, variations)
     else:
         events = correct_jets_data(events, cfg, era)
 
@@ -347,16 +347,19 @@ def process(events, **kwargs):
 
         events["Jet"] = events.Jet[events.Jet.pt >= 30]
         # events = events[(ak.num(events.Jet[events.Jet.pt >= 30], axis=1) >= 2)]
-        events["njet"] = ak.num(events.Jet, axis=1)
-        events["njet_50"] = ak.num(events.Jet[events.Jet.pt >= 50], axis=1)
+        # events["njet"] = ak.num(events.Jet, axis=1)
+        # events["njet_50"] = ak.num(events.Jet[events.Jet.pt >= 50], axis=1)
         # Define categories
 
         events["ee"] = (
             events.Lepton[:, 0].pdgId * events.Lepton[:, 1].pdgId
-        ) == -11 * 11
+        ) == 11 * 11
         events["mm"] = (
             events.Lepton[:, 0].pdgId * events.Lepton[:, 1].pdgId
-        ) == -13 * 13
+        ) == 13 * 13
+        events["em"] = (
+            events.Lepton[:, 0].pdgId * events.Lepton[:, 1].pdgId
+        ) == 11 * 13
 
         if not isData:
             events["prompt_gen_match_2l"] = (
@@ -366,7 +369,7 @@ def process(events, **kwargs):
             events = events[events.prompt_gen_match_2l]
 
         # Analysis level cuts
-        leptoncut = events.ee | events.mm
+        leptoncut = events.ee | events.mm | events.em
 
         # third lepton veto
         leptoncut = leptoncut & (

@@ -1,5 +1,101 @@
 # ruff: noqa : E501
 ElectronWP = {
+    "Full2022EEv12": {
+        "VetoObjWP": {
+            "HLTsafe": {
+                "cuts": {
+                    # Common cuts
+                    "True": ["False"],
+                },
+            },
+        },
+        # ------------
+        "FakeObjWP": {
+            "HLTsafe": {
+                "cuts": {
+                    # Common cuts
+                    "True": [
+                        'abs(electron_col[LF_idx]["eta"]) < 2.5',
+                        'electron_col[LF_idx]["cutBased"] >= 3',
+                        'electron_col[LF_idx]["convVeto"] == 1',
+                    ],
+                    # Barrel
+                    'abs(electron_col[LF_idx]["eta"]) <= 1.479': [
+                        'abs(electron_col[LF_idx]["dxy"]) < 0.05',
+                        'abs(electron_col[LF_idx]["dz"]) < 0.1',
+                    ],
+                    # EndCap
+                    'abs(electron_col[LF_idx]["eta"]) > 1.479': [
+                        'electron_col[LF_idx]["sieie"] < 0.03 ',
+                        'abs(electron_col[LF_idx]["eInvMinusPInv"]) < 0.014',
+                        'abs(electron_col[LF_idx]["dxy"]) < 0.1',
+                        'abs(electron_col[LF_idx]["dz"]) < 0.2',
+                    ],
+                },
+            },
+        },
+        "TightObjWP": {
+            "wp90iso": {
+                "cuts": {
+                    "True": [
+                        'abs(electron_col[LF_idx]["eta"]) < 2.5',
+                        'electron_col[LF_idx]["mvaIso_WP90"] == 1',
+                        'electron_col[LF_idx]["convVeto"] == 1',
+                    ],
+                },
+                "tkSF": {
+                    "1-1": [
+                        "2022Re-recoE+PromptFG",
+                        "Electron-ID-SF",
+                        "data/jsonpog-integration/POG/EGM/2022_Summer22EE/electron.json.gz",
+                    ]
+                },
+                "wpSF": {
+                    "1-1": [
+                        "2022Re-recoE+PromptFG",
+                        "Electron-ID-SF",
+                        "passingMVA90",
+                        "data/scale_factor/Full2022EEv12/electron.json",
+                    ],
+                },
+                "fakeW": "data/fake_prompt_rates/Full2022EEv12/wp90iso/",
+            },
+            "mvaWinter22V2Iso_WP90": {
+                "cuts": {
+                    "True": [
+                        'abs(electron_col[LF_idx]["eta"]) < 2.5',
+                        'electron_col[LF_idx]["mvaIso_WP90"] == 1',
+                        'electron_col[LF_idx]["convVeto"] == 1',
+                        'electron_col[LF_idx]["pfRelIso03_all"] < 0.06',
+                    ],
+                    'abs(electron_col[LF_idx]["eta"]) <= 1.479': [
+                        'abs(electron_col[LF_idx]["dxy"]) < 0.05',
+                        'abs(electron_col[LF_idx]["dz"])  < 0.1',
+                    ],
+                    'abs(electron_col[LF_idx]["eta"]) > 1.479': [
+                        'abs(electron_col[LF_idx]["dxy"]) < 0.1',
+                        'abs(electron_col[LF_idx]["dz"]) <  0.2',
+                    ],
+                },
+                "tkSF": {
+                    "1-1": [
+                        "2022Re-recoE+PromptFG",
+                        "Electron-ID-SF",
+                        "data/jsonpog-integration/POG/EGM/2022_Summer22EE/electron.json.gz",
+                    ]
+                },
+                "wpSF": {
+                    "1-1": [
+                        "2022Re-recoE+PromptFG",
+                        "Electron-ID-SF",
+                        "passingMVA90_HWW",
+                        "data/scale_factor/Full2022EEv12/electron.json",
+                    ],
+                },
+                "fakeW": "data/fake_prompt_rates/Full2022EEv12/mvaWinter22V2Iso_WP90/",
+            },
+        },
+    },
     "Full2018v9": {
         ## ------------
         "VetoObjWP": {
@@ -278,6 +374,97 @@ ElectronWP = {
 
 
 MuonWP = {
+    "Full2022EEv12": {
+        "VetoObjWP": {
+            "HLTsafe": {
+                "cuts": {
+                    # Common cuts
+                    "True": [
+                        'abs(muon_col[LF_idx]["eta"]) < 2.4',
+                        'muon_col[LF_idx]["pt"] > 10.0',
+                    ]
+                },
+            }
+        },
+        # ------------
+        "FakeObjWP": {
+            "HLTsafe": {
+                "cuts": {
+                    # Common cuts
+                    "True": [
+                        'abs(muon_col[LF_idx]["eta"]) < 2.4',
+                        'muon_col[LF_idx]["tightId"] == 1',
+                        'abs(muon_col[LF_idx]["dz"]) < 0.1',
+                        'muon_col[LF_idx]["pfRelIso04_all"] < 0.4',
+                    ],
+                    # dxy for pT < 20 GeV
+                    'muon_col[LF_idx]["pt"] <= 20.0': [
+                        'abs(muon_col[LF_idx]["dxy"]) < 0.01 ',
+                    ],
+                    # dxy for pT > 20 GeV
+                    'muon_col[LF_idx]["pt"] > 20.0': [
+                        'abs(muon_col[LF_idx]["dxy"]) < 0.02 ',
+                    ],
+                },
+            },
+        },
+        # ------------
+        "TightObjWP": {
+            "cut_TightID_POG": {
+                "cuts": {
+                    "True": [
+                        'abs(muon_col[LF_idx]["eta"]) < 2.4',
+                        'muon_col[LF_idx]["tightId"] == 1',
+                    ],
+                },
+                "idSF": {
+                    "1-1": [
+                        "NUM_TightID_DEN_TrackerMuons",
+                        "data/jsonpog-integration/POG/MUO/2022_Summer22EE/Muon.Z.json.gz",
+                    ],
+                },
+                "isoSF": {
+                    "1-1": [
+                        "NUM_TightPFIso_DEN_TightID",
+                        "data/jsonpog-integration/POG/MUO/2022_Summer22EE/Muon.Z.json.gz",
+                    ],
+                },
+                "fakeW": "data/fake_prompt_rates/Full2022EEv12/cut_Tight_HWW/",
+            },
+            "cut_Tight_HWW": {
+                "cuts": {
+                    # Common cuts
+                    "True": [
+                        'abs(muon_col[LF_idx]["eta"]) < 2.4',
+                        'muon_col[LF_idx]["tightId"] == 1',
+                        'abs(muon_col[LF_idx]["dz"]) < 0.1',
+                        'muon_col["pfIsoId"] >= 4',
+                    ],
+                    # dxy for pT < 20 GeV
+                    'muon_col[LF_idx]["pt"] <= 20.0': [
+                        'abs(muon_col[LF_idx]["dxy"]) < 0.01',
+                    ],
+                    # dxy for pT > 20 GeV
+                    'muon_col[LF_idx]["pt"] > 20.0': [
+                        'abs(muon_col[LF_idx]["dxy"]) < 0.02',
+                    ],
+                },
+                "idSF": {
+                    "1-1": [
+                        "NUM_TightID_HWW_DEN_TrackerMuons",
+                        "data/scale_factor/Full2022EEv12/muonSF_latinos_HWW.json",
+                    ],
+                },
+                "isoSF": {
+                    "1-1": [
+                        "NUM_TightPFIso_DEN_TightID_HWW",
+                        "data/scale_factor/Full2022EEv12/muonSF_latinos_HWW.json",
+                    ],
+                },
+                "fakeW": "data/fake_prompt_rates/Full2022EEv12/cut_Tight_HWW/",
+            },
+        },
+    },
     "Full2018v9": {
         "VetoObjWP": {
             "HLTsafe": {

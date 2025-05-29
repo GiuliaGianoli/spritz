@@ -7,7 +7,7 @@
                 "phi",
                 "mass",
                 "jetId",
-                "puId",
+                "puId", // non lo trovo
                 "rawFactor",
                 "area",
                 "btagDeepFlavB"
@@ -27,7 +27,7 @@
                 "eta",
                 "phi",
                 "pdgId",
-                "mvaFall17V2Iso_WP90",
+                "mvaIso_WP90", 
                 "convVeto",
                 "pfRelIso03_all",
                 "cutBased",
@@ -57,14 +57,6 @@
             ],
             "with_name": null
         },
-        "L1PreFiringWeight": {
-            "branches": [
-                "Nom",
-                "Up",
-                "Dn"
-            ],
-            "with_name": null
-        },
         "fixedGridRhoFastjetAll": {
             "branches": [],
             "with_name": null
@@ -86,7 +78,7 @@
                 "phi",
                 "mass",
                 "jetId",
-                "puId",
+                "puId", //non lo trovo
                 "genJetIdx",
                 "rawFactor",
                 "area",
@@ -120,9 +112,9 @@
                 "phi",
                 "mass",
                 "pdgId",
-                "status",
-                "genPartIdxMother",
-                "statusFlags"
+                "status", 
+                "genPartIdxMother", 
+                "statusFlags" 
             ],
             "with_name": "Momentum4D"
         },
@@ -133,9 +125,9 @@
                 "phi",
                 "mass",
                 "pdgId",
-                "isPrompt",
-                "genPartIdxMother",
-                "statusFlags"
+                "isPrompt", //non c'è
+                "genPartIdxMother", //non c'è
+                "statusFlags" //non c'è
             ],
             "with_name": "Momentum4D"
         },
@@ -154,7 +146,7 @@
                 "eta",
                 "phi",
                 "pdgId",
-                "mvaFall17V2Iso_WP90",
+                "mvaIso_WP90", 
                 "convVeto",
                 "pfRelIso03_all",
                 "cutBased",
@@ -183,14 +175,6 @@
         "PV": {
             "branches": [
                 "npvsGood"
-            ],
-            "with_name": null
-        },
-        "L1PreFiringWeight": {
-            "branches": [
-                "Nom",
-                "Up",
-                "Dn"
             ],
             "with_name": null
         },

@@ -2,6 +2,73 @@
 Trigger = {
     # --------------------------- Full2018v9---------------------------------
     # Full 2018 lumi --> 59.832475339
+   'Full2022EEv12'  :  {
+        # Run2022EFG
+        1  :  { 'begin' : 359022 , 'end' : 362760 , 'lumi' : 27.007197591,
+                'LegEffData' : { 'DoubleEleLegHigPt' : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/data/EGM_MVAid/Ele23_Ele12_leg1_pt_eta_efficiency.json',
+                                 'DoubleEleLegLowPt' : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/data/EGM_MVAid/Ele23_Ele12_leg2_pt_eta_efficiency.json',
+                                 'SingleEle'         : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/data/EGM_MVAid/Ele30_pt_eta_efficiency.json',
+                                 'DoubleMuLegHigPt'  : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/data/Muons/Mu17_Mu8_leg1_pt_eta_efficiency.json' ,
+                                 'DoubleMuLegLowPt'  : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/data/Muons/Mu17_Mu8_leg2_pt_eta_efficiency.json' ,
+                                 'SingleMu'          : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/data/Muons/IsoMu24_pt_eta_efficiency.json' ,
+                                 'MuEleLegHigPt'     : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/data/Muons/Mu23_pt_eta_efficiency.json',
+                                 'MuEleLegLowPt'     : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/data/EGM_MVAid/Ele23_Ele12_leg2_pt_eta_efficiency.json',
+                                 'EleMuLegHigPt'     : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/data/EGM_MVAid/Ele23_Ele12_leg1_pt_eta_efficiency.json',
+                                 'EleMuLegLowPt'     : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/data/Muons/Mu17_Mu8_leg2_pt_eta_efficiency.json' ,
+                                } ,
+                'LegEffMC' : { 'DoubleEleLegHigPt' : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/mc/EGM_MVAid/Ele23_Ele12_leg1_pt_eta_efficiency.json',
+                               'DoubleEleLegLowPt' : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/mc/EGM_MVAid/Ele23_Ele12_leg2_pt_eta_efficiency.json',
+                               'SingleEle'         : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/mc/EGM_MVAid/Ele30_pt_eta_efficiency.json',
+                               'DoubleMuLegHigPt'  : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/mc/Muons/Mu17_Mu8_leg1_pt_eta_efficiency.json' ,
+                               'DoubleMuLegLowPt'  : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/mc/Muons/Mu17_Mu8_leg2_pt_eta_efficiency.json' ,
+                               'SingleMu'          : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/mc/Muons/IsoMu24_pt_eta_efficiency.json' ,
+                               'MuEleLegHigPt'     : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/mc/Muons/Mu23_pt_eta_efficiency.json',
+                               'MuEleLegLowPt'     : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/mc/EGM_MVAid/Ele23_Ele12_leg2_pt_eta_efficiency.json',
+                               'EleMuLegHigPt'     : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/mc/EGM_MVAid/Ele23_Ele12_leg1_pt_eta_efficiency.json',
+                               'EleMuLegLowPt'     : '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/mc/Muons/Mu17_Mu8_leg2_pt_eta_efficiency.json' ,
+                              } ,
+                'DZEffData'  :  {
+                    'DoubleEle' : { 'value'   : [1.0,0.0] } ,
+                    'DoubleMu'  : { 'value'    : [1.0,0.0] } ,
+                    'MuEle'     : { 'value'   : [1.0,0.0] } ,
+                    'EleMu'     : { 'value'    : [1.0,0.0] } ,
+                } ,
+                'DZEffMC'  :  {
+                    'DoubleEle' : { 'value'   : [1.0,0.0] } ,
+                    'DoubleMu'  : { 'value'    : [1.0,0.0] } ,
+                    'MuEle'     : { 'value'   : [1.0,0.0] } ,
+                    'EleMu'     : { 'value'    : [1.0,0.0] } ,
+                } ,
+                'DRllSF'  : {
+                    'DoubleEle' :  '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/DRll_SF_ee.txt' ,
+                    'DoubleMu'  :  '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/DRll_SF_mm.txt' ,
+                    'MuEle'     :  '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/DRll_SF_me.txt' ,
+                    'EleMu'     :  '/gwpool/users/ggianoli/spritz/data/Full2022EEv12/trigger/DRll_SF_em.txt' ,
+                } ,
+                'GlEff'  :  { 'DoubleEle' : [1.0  ,0.   ],
+                              'DoubleMu'  : [1.0  ,0.   ],
+                              'MuEle'     : [1.0  ,0.   ],
+                              'EleMu'     : [1.0  ,0.   ],
+                              'SingleEle' : [1.0  ,0.   ],
+                              'SingleMu'  : [1.0  ,0.   ],
+                             } ,
+                'EMTFBug':  False ,
+                'DATA'   :  {
+                    'EleMu'     : [ 'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL', 'HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ', 'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ'] ,
+                    'DoubleMu'  : [ 'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8'] ,
+                    'SingleMu'  : [ 'HLT_IsoMu24'] ,
+                    'DoubleEle' : [ 'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL'] ,
+                    'SingleEle' : [ 'HLT_Ele30_WPTight_Gsf'] , 
+                } ,
+                'MC'     :  {
+                    'EleMu'     : [ 'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL', 'HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ', 'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ'] ,
+                    'DoubleMu'  : [ 'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8'] ,
+                    'SingleMu'  : [ 'HLT_IsoMu24'] ,
+                    'DoubleEle' : [ 'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL'] ,
+                    'SingleEle' : [ 'HLT_Ele30_WPTight_Gsf'] , 
+                } ,
+               },
+    },
     "Full2018v9": {
         # Full 2018
         1: {
