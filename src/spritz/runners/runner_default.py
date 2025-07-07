@@ -1,6 +1,6 @@
 import gc
 import json
-import sys
+import sys 
 import traceback as tb
 from copy import deepcopy
 
@@ -38,7 +38,6 @@ from spritz.modules.jme import (
 from spritz.modules.lepton_sel import createLepton, leptonSel
 from spritz.modules.lepton_sf import lepton_sf
 from spritz.modules.prompt_gen import prompt_gen_match_leptons
-from spritz.modules.puid_sf import puid_sf
 from spritz.modules.puweight import puweight_sf
 from spritz.modules.rochester import correctRochester, getRochester
 from spritz.modules.run_assign import assign_run_period
@@ -51,36 +50,83 @@ print("uproot version", uproot.__version__)
 print("awkward version", ak.__version__)
 
 path_fw = get_fw_path()
-with open("cfg.json") as file:
+with open("/gwpool/users/ggianoli/spritz/data/Full2022EEv12/cfg.json") as file:
     txt = file.read()
     txt = txt.replace("RPLME_PATH_FW", path_fw)
     cfg = json.loads(txt)
 
-ceval_puid = correctionlib.CorrectionSet.from_file(cfg["puidSF"])
 ceval_btag = correctionlib.CorrectionSet.from_file(cfg["btagSF"])
 ceval_puWeight = correctionlib.CorrectionSet.from_file(cfg["puWeights"])
 ceval_lepton_sf = correctionlib.CorrectionSet.from_file(cfg["leptonSF"])
-ceval_assign_run = correctionlib.CorrectionSet.from_file(cfg["run_to_era"])
-
-cset_trigger = correctionlib.CorrectionSet.from_file(cfg["triggerSF"])
-# jec_stack = getJetCorrections(cfg)
-rochester = getRochester(cfg)
+#ceval_assign_run = correctionlib.CorrectionSet.from_file(cfg["run_to_era"])
 
 analysis_path = sys.argv[1]
 analysis_cfg = get_analysis_dict(analysis_path)
-special_analysis_cfg = analysis_cfg["special_analysis_cfg"]
+#special_analysis_cfg = analysis_cfg["special_analysis_cfg"]
 sess_opt = ort.SessionOptions()
 sess_opt.intra_op_num_threads = 1
 sess_opt.inter_op_num_threads = 1
-dnn_cfg = special_analysis_cfg["dnn"]
-onnx_session = ort.InferenceSession(dnn_cfg["model"], sess_opt)
-dnn_t = dnn_transform(dnn_cfg["cumulative_signal"])
+#dnn_cfg = special_analysis_cfg["dnn"]
+#onnx_session = ort.InferenceSession(dnn_cfg["model"], sess_opt)
+#dnn_t = dnn_transform(dnn_cfg["cumulative_signal"])
 
 
 def ensure_not_none(arr):
     if ak.any(ak.is_none(arr)):
         raise Exception("There are some None in branch", arr[ak.is_none(arr)])
     return ak.fill_none(arr, -9999.9)
+
+
+def select_wz_region(events):
+    # 1. Picking first 3 leptons 
+    leptons3 = events.Lepton[:, :3]
+
+    # 2. Generate all pairs among the 3 leptons
+    lep_pairs = ak.combinations(leptons3, 2, fields=["l1", "l2"])
+
+    # 3. OS-SF filter: pairs with opposite charge and same flavor
+    os_sf_mask = (
+        (lep_pairs.l1.pdgId + lep_pairs.l2.pdgId == 0)
+        & (abs(lep_pairs.l1.pdgId) == abs(lep_pairs.l2.pdgId))
+    )
+    os_sf_pairs = lep_pairs[os_sf_mask]
+
+    # 4. Compute invariant mass of each OS-SF pair
+    z_cand_mass = (os_sf_pairs.l1 + os_sf_pairs.l2).mass
+
+    # 5. Choose the pair closest to nominal Z-mass (91.2 GeV)
+    z_mass_diff = abs(z_cand_mass - 91.2)
+    best_z_idx = ak.argmin(z_mass_diff, axis=1)
+
+    # 6. Extract the best Z candidate pair per event
+    best_z_pair = os_sf_pairs[best_z_idx]
+
+    # 7. Their invariant mass
+    best_z_mass = (best_z_pair.l1 + best_z_pair.l2).mass
+
+    # 8. Ensure at least one valid OS-SF pair exists
+    valid_z = ak.num(os_sf_pairs) > 0
+
+    #mlll
+    #mlll = (events.Lepton[:, 0] + events.Lepton[:, 1] + events[ak.num(events.Lepton) >= 3].Lepton[:, 2]).mass
+
+    # 9. Build final mask including mass window
+    mask = ( (ak.num(events.Lepton) >= 3)      
+        #&  valid_z
+        #& (mlll >100)
+        & (events.mjj>500)
+        & (best_z_mass >= 91.2 - 15)
+        & (best_z_mass <= 91.2 + 15)
+        & (events.mjj > 500)
+        & (events.PuppiMET.pt > 30)
+        & (abs(events.detajj) > 2.5)
+        & (events.Zeppenfeld_Z <= 1.0)
+        & (events.Lepton[:, 0].pt > 25)
+        & (events.Lepton[:, 1].pt > 20)
+        #& (events.Lepton[:, 2].pt > 10)
+    )
+
+    return mask, best_z_pair, best_z_mass
 
 
 def process(events, **kwargs):
@@ -116,7 +162,7 @@ def process(events, **kwargs):
     events["weight"] = events.weight * special_weight
 
     # pass trigger and flags
-    events = assign_run_period(events, isData, cfg, ceval_assign_run)
+    #events = assign_run_period(events, isData, cfg, ceval_assign_run)
     events = pass_trigger(events, cfg["era"])
     events = pass_flags(events, cfg["flags"])
 
@@ -127,9 +173,9 @@ def process(events, **kwargs):
         events = events[eval(trigger_sel)]
 
     # high pt muons
-    events[("Muon", "pt")] = ak.where(
-        events.Muon.pt > 200, events.Muon.pt * events.Muon.tunepRelPt, events.Muon.pt
-    )
+    # events[("Muon", "pt")] = ak.where(
+    #     events.Muon.pt > 200, events.Muon.pt * events.Muon.tunepRelPt, events.Muon.pt
+    # )
 
     events = jetSel(events, cfg)
 
@@ -141,6 +187,8 @@ def process(events, **kwargs):
     events["Lepton"] = events.Lepton[events.Lepton.isLoose]
     # Apply a skim!
     events = events[ak.num(events.Lepton) >= 2]
+    # if any(r in ["WZ", "WZb"] for r in analysis_cfg["regions"].keys()):
+    #      events = events[ak.num(events.Lepton) >= 3]
     events = events[events.Lepton[:, 0].pt >= 8]
 
     if not isData:
@@ -149,7 +197,7 @@ def process(events, **kwargs):
     # FIXME should clean from only tight / loose?
     events = cleanJet(events)
 
-    # Require at least one good PV
+    # Require at least one good PV (tolgo)
     events = events[events.PV.npvsGood > 0]
 
     if kwargs.get("top_pt_rwgt", False):
@@ -178,8 +226,8 @@ def process(events, **kwargs):
         ) + (toppt * atoppt <= 0.0)
         events["weight"] = events.weight * top_pt_rwgt
 
-    # Remove jets HEM issue
-    events = remove_jets_HEM_issue(events, cfg)
+    # Remove jets HEM issue (via)
+    #events = remove_jets_HEM_issue(events, cfg)
 
     # # Jet veto maps
     events = jet_veto(events, cfg)
@@ -188,15 +236,15 @@ def process(events, **kwargs):
     # Should load SF and corrections here
 
     # # Correct Muons with rochester
-    events = correctRochester(events, isData, rochester)
+    #events = correctRochester(events, isData, rochester)
 
     if not isData:
         # puWeight
         events, variations = puweight_sf(events, variations, ceval_puWeight, cfg)
 
         # add trigger SF
-        events, variations = trigger_sf(events, variations, cset_trigger, cfg)
-
+        #events, variations = trigger_sf(events, variations, cset_trigger, cfg)
+        #prima era commentato
         # add LeptonSF
         events, variations = lepton_sf(events, variations, ceval_lepton_sf, cfg)
 
@@ -204,44 +252,44 @@ def process(events, **kwargs):
         # FIXME add MET corrections?
 
         # Jets corrections
-
         # JEC + JER + JES
         events, variations = correct_jets_mc(
             events, variations, cfg, run_variations=False
         )
 
         # puId SF
-        events, variations = puid_sf(events, variations, ceval_puid, cfg)
+        #events, variations = puid_sf(events, variations, ceval_puid, cfg)
 
         # btag SF
+        #ora lo commento
         events, variations = btag_sf(events, variations, ceval_btag, cfg)
 
         # prefire
 
-        if "L1PreFiringWeight" in ak.fields(events):
-            events["prefireWeight"] = events.L1PreFiringWeight.Nom
-            events["prefireWeight_up"] = events.L1PreFiringWeight.Up
-            events["prefireWeight_down"] = events.L1PreFiringWeight.Dn
+        # if "L1PreFiringWeight" in ak.fields(events):
+        #     events["prefireWeight"] = events.L1PreFiringWeight.Nom
+        #     events["prefireWeight_up"] = events.L1PreFiringWeight.Up
+        #     events["prefireWeight_down"] = events.L1PreFiringWeight.Dn
 
-            variations.register_variation(
-                columns=["prefireWeight"],
-                variation_name="prefireWeight_up",
-                format_rule=lambda _, var_name: var_name,
-            )
-            variations.register_variation(
-                columns=["prefireWeight"],
-                variation_name="prefireWeight_down",
-                format_rule=lambda _, var_name: var_name,
-            )
-        else:
-            events["prefireWeight"] = ak.ones_like(events.weight)
+        #     variations.register_variation(
+        #         columns=["prefireWeight"],
+        #         variation_name="prefireWeight_up",
+        #         format_rule=lambda _, var_name: var_name,
+        #     )
+        #     variations.register_variation(
+        #         columns=["prefireWeight"],
+        #         variation_name="prefireWeight_down",
+        #         format_rule=lambda _, var_name: var_name,
+        #     )
+        # else:
+        #     events["prefireWeight"] = ak.ones_like(events.weight)
 
-        # Theory unc.
-        doTheoryVariations = special_analysis_cfg.get(
-            "do_theory_variations", True
-        ) and (dataset == "Zjj" or "DY" in dataset)
-        if doTheoryVariations:
-            events, variations = theory_unc(events, variations)
+        # # Theory unc.
+        # doTheoryVariations = special_analysis_cfg.get(
+        #     "do_theory_variations", True
+        # ) and (dataset == "Zjj" or "DY" in dataset)
+        # if doTheoryVariations:
+        #     events, variations = theory_unc(events, variations)
     else:
         events = correct_jets_data(events, cfg, era)
 
@@ -345,18 +393,39 @@ def process(events, **kwargs):
         jet_sort = ak.argsort(events[("Jet", "pt")], ascending=False, axis=1)
         events["Jet"] = events.Jet[jet_sort]
 
-        events["Jet"] = events.Jet[events.Jet.pt >= 30]
+        mask_has_two_jets = ak.num(events.Jet) >= 2
+        events = events[mask_has_two_jets]
+
+        mask_jet = (
+        (events.Jet[:, 0].pt > 50)
+            & (
+            (
+                (events.Jet[:, 1].pt > 30)
+                & ((abs(events.Jet[:, 1].eta) < 2.5) | (abs(events.Jet[:, 1].eta) > 3.0))
+            )
+        |   (
+                (events.Jet[:, 1].pt > 50)
+                & ((abs(events.Jet[:, 1].eta) > 2.5) & (abs(events.Jet[:, 1].eta) < 3.0))
+         )
+        )
+        )
+
+        events = events[mask_jet]
+
         # events = events[(ak.num(events.Jet[events.Jet.pt >= 30], axis=1) >= 2)]
-        events["njet"] = ak.num(events.Jet, axis=1)
-        events["njet_50"] = ak.num(events.Jet[events.Jet.pt >= 50], axis=1)
+        # events["njet"] = ak.num(events.Jet, axis=1)
+        # events["njet_50"] = ak.num(events.Jet[events.Jet.pt >= 50], axis=1)
         # Define categories
 
         events["ee"] = (
             events.Lepton[:, 0].pdgId * events.Lepton[:, 1].pdgId
-        ) == -11 * 11
+        ) == 11 * 11
         events["mm"] = (
             events.Lepton[:, 0].pdgId * events.Lepton[:, 1].pdgId
-        ) == -13 * 13
+        ) == 13 * 13
+        events["em"] = (
+            events.Lepton[:, 0].pdgId * events.Lepton[:, 1].pdgId
+        ) == 11 * 13
 
         if not isData:
             events["prompt_gen_match_2l"] = (
@@ -365,27 +434,51 @@ def process(events, **kwargs):
             )
             events = events[events.prompt_gen_match_2l]
 
-        # Analysis level cuts
-        leptoncut = events.ee | events.mm
+        # # Analysis level cuts
+        # leptoncut = events.ee | events.mm | events.em
 
-        # third lepton veto
-        leptoncut = leptoncut & (
-            ak.fill_none(
-                ak.mask(
-                    ak.all(events.Lepton[:, 2:].pt < 10, axis=1),
-                    ak.num(events.Lepton) >= 3,
-                ),
-                True,
-                axis=0,
+        # # third lepton veto
+        # leptoncut = leptoncut & (
+        #     ak.fill_none(
+        #         ak.mask(
+        #             ak.all(events.Lepton[:, 2:].pt < 10, axis=1),
+        #             ak.num(events.Lepton) >= 3,
+        #         ),
+        #         True,
+        #         axis=0,
+        #     )
+        # )
+
+        # # Cut on pt of two leading leptons
+        # leptoncut = (
+        #     leptoncut & (events.Lepton[:, 0].pt > 25) & (events.Lepton[:, 1].pt > 20)
+        # )
+        # #commentato per il momento
+        # events = events[leptoncut]
+
+        # Applico selezioni solo se NON sto facendo WZ
+        if not any(r in ["WZ", "WZb"] for r in analysis_cfg["regions"].keys()):
+            leptoncut = events.ee | events.mm | events.em
+
+            # third lepton veto
+            leptoncut = leptoncut & (
+                ak.fill_none(
+                    ak.mask(
+                        ak.all(events.Lepton[:, 2:].pt < 10, axis=1),
+                        ak.num(events.Lepton) >= 3,
+                    ),
+                    True,
+                    axis=0,
+                )
             )
-        )
 
-        # Cut on pt of two leading leptons
-        leptoncut = (
-            leptoncut & (events.Lepton[:, 0].pt > 25) & (events.Lepton[:, 1].pt > 13)
-        )
+            # pt cut
+            leptoncut = (
+            leptoncut & (events.Lepton[:, 0].pt > 25) & (events.Lepton[:, 1].pt > 20)
+            )
 
-        events = events[leptoncut]
+            events = events[leptoncut]
+
 
         if len(events) == 0:
             continue
@@ -393,17 +486,18 @@ def process(events, **kwargs):
         # BTag
 
         btag_mask = (events.Jet.pt > 30) & (abs(events.Jet.eta) < 2.5)
-        btag_cut = btag_mask & (events.Jet.btagDeepFlavB > cfg["bTag"]["btagMedium"])
+        btag_cut = btag_mask & (events.Jet.btagPNetB > cfg["bTag"]["btagMedium"])
         events["bVeto"] = ak.num(events.Jet[btag_cut]) == 0
         events["bTag"] = ak.num(events.Jet[btag_cut]) >= 1
 
         if not isData:
             # Load all SFs
             # FIXME should remove btagSF
+            #ora lo commento
             events["btagSF"] = ak.prod(
-                events.Jet[btag_mask].btagSF_deepjet_shape, axis=1
-            )
-            events["PUID_SF"] = ak.prod(events.Jet.PUID_SF, axis=1)
+                 events.Jet[btag_mask].btagSF_deepjet_shape, axis=1
+             )
+            #events["PUID_SF"] = ak.prod(events.Jet.PUID_SF, axis=1)
             events["RecoSF"] = events.Lepton[:, 0].RecoSF * events.Lepton[:, 1].RecoSF
             events["TightSF"] = (
                 events.Lepton[:, 0].TightSF * events.Lepton[:, 1].TightSF
@@ -412,12 +506,12 @@ def process(events, **kwargs):
             events["weight"] = (
                 events.weight
                 * events.puWeight
-                * events.PUID_SF
+                #* events.PUID_SF
                 * events.RecoSF
                 * events.TightSF
                 * events.btagSF
-                * events.prefireWeight
-                * events.TriggerSFweight_2l
+                #* events.prefireWeight
+                #* events.TriggerSFweight_2l
                 # * events.EMTFbug_veto
             )
 
@@ -441,12 +535,12 @@ def process(events, **kwargs):
         #     )
         # ]
 
-        events = dnn_evaluator(
-            onnx_session,
-            events,
-            dnn_t,
-            dnn_cfg,
-        )
+        # events = dnn_evaluator(
+        #     onnx_session,
+        #     events,
+        #     dnn_t,
+        #     dnn_cfg,
+        # )
 
         if dataset == "Zjj":
             events = gen_analysis(events, dataset)
@@ -484,6 +578,19 @@ def process(events, **kwargs):
             events["hard"] = gen_mask & both_jets_gen_matched
             events["PU"] = gen_mask & ~both_jets_gen_matched
 
+        if "WZ" in dataset:
+            # Seleziona solo eventi con almeno 3 leptoni
+            events = events[ak.num(events.Lepton) >= 3]
+
+            # Applica maschera per regione WZ
+            mask_wz, best_z_pair, best_z_mass = select_wz_region(events)
+            events = events[mask_wz]
+
+            # Salva per plot o selezioni future
+            events["best_z_mass"] = best_z_mass
+            events["z_lep1"] = best_z_pair.l1
+            events["z_lep2"] = best_z_pair.l2
+
         events[f"mask_{dataset}"] = ak.ones_like(events.run) == 1.0
         events[f"weight_{dataset}"] = events.weight
 
@@ -512,6 +619,21 @@ def process(events, **kwargs):
 
         for region in regions:
             regions[region]["mask"] = regions[region]["func"](events)
+        # if any(r in ["WZ", "WZb"] for r in analysis_cfg["regions"].keys()):
+        #      events = events[ak.num(events.Lepton) >= 3]
+        # for region in regions:
+        #     regions[region]["mask"] = regions[region]["func"](events)
+
+        # region_events_map = {}
+
+        # for region in regions:
+        #     if region == "WZ":
+        #         region_events = events[ak.num(events.Lepton) >= 3]
+        #     else:
+        #         region_events = events
+    
+        #     region_events_map[region] = region_events  # salva!
+        #     regions[region]["mask"] = regions[region]["func"](region_events)
 
         # Fill histograms
         for dataset_name in results:
@@ -519,6 +641,8 @@ def process(events, **kwargs):
                 # for category in categories:
                 # Apply mask for specific region, category and dataset_name
                 mask = regions[region]["mask"] & events[f"mask_{dataset_name}"]
+                # region_events = region_events_map[region]
+                # mask = regions[region]["mask"] & region_events[f"mask_{dataset_name}"]
 
                 if len(events[mask]) == 0:
                     continue
