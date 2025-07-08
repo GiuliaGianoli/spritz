@@ -243,53 +243,51 @@ regions["SSWWb"] = {
 }
 
 
-# def select_wz_region(events):
-#     # 1. Picking first 3 leptons 
-#     leptons3 = events.Lepton[:, :3]
+def select_wz_region(events):
+    # 1. Picking first 3 leptons 
+    #leptons3 = events.Lepton[:, :3]
+    leptons3 = ak.pad_none(events.Lepton, 3)[:, :3]
 
-#     # 2. Generate all pairs among the 3 leptons
-#     lep_pairs = ak.combinations(leptons3, 2, fields=["l1", "l2"])
+    # 2. Generate all pairs among the 3 leptons
+    lep_pairs = ak.combinations(leptons3, 2, fields=["l1", "l2"])
 
-#     # 3. OS-SF filter: pairs with opposite charge and same flavor
-#     os_sf_mask = (
-#         (lep_pairs.l1.pdgId + lep_pairs.l2.pdgId == 0)
-#         & (abs(lep_pairs.l1.pdgId) == abs(lep_pairs.l2.pdgId))
-#     )
-#     os_sf_pairs = lep_pairs[os_sf_mask]
+    # 3. OS-SF filter: pairs with opposite charge and same flavor
+    os_sf_mask = ak.fill_none(
+    (lep_pairs.l1.pdgId + lep_pairs.l2.pdgId == 0)
+    & (abs(lep_pairs.l1.pdgId) == abs(lep_pairs.l2.pdgId)),
+    False
+    )
+    os_sf_pairs = lep_pairs[os_sf_mask]
 
-#     # 4. Compute invariant mass of each OS-SF pair
-#     z_cand_mass = (os_sf_pairs.l1 + os_sf_pairs.l2).mass
+    # 4. Compute invariant mass of each OS-SF pair
+    z_cand_mass = ak.fill_none((os_sf_pairs.l1 + os_sf_pairs.l2).mass, False)
 
-#     # 5. Choose the pair closest to nominal Z-mass (91.2 GeV)
-#     z_mass_diff = abs(z_cand_mass - 91.2)
-#     best_z_idx = ak.argmin(z_mass_diff, axis=1)
+    # 5. Choose the pair closest to nominal Z-mass (91.2 GeV)
+    z_mass_diff = ak.fill_none(abs(z_cand_mass - 91.2), False)
+    best_z_idx = ak.fill_none(ak.argmin(z_mass_diff, axis=1), False)
 
-#     # 6. Extract the best Z candidate pair per event
-#     best_z_pair = os_sf_pairs[best_z_idx]
+    # 6. Extract the best Z candidate pair per event
+    best_z_pair = os_sf_pairs[best_z_idx]
 
-#     # 7. Their invariant mass
-#     best_z_mass = (best_z_pair.l1 + best_z_pair.l2).mass
+    # 7. Their invariant mass
+    best_z_mass = ak.fill_none((best_z_pair.l1 + best_z_pair.l2).mass,False)
 
-#     # 8. Ensure at least one valid OS-SF pair exists
-#     valid_z = ak.num(os_sf_pairs) > 0
+    # 8. Ensure at least one valid OS-SF pair exists
+    valid_z = ak.num(os_sf_pairs) > 0
 
-#     #mlll
-#     mlll = (events.Lepton[:, 0] + events.Lepton[:, 1] + events[ak.num(events.Lepton) >= 3].Lepton[:, 2]).mass
+    #mlll
+    mlll = (ak.pad_none(events.Lepton, 3)[:, 0] + ak.pad_none(events.Lepton, 3)[:, 1] + ak.pad_none(events.Lepton, 3)[:, 2]).mass
 
-#     # 9. Build final mask including mass window
-#     mask = ( (ak.num(events.Lepton) >= 3)      
-#         &  valid_z
-#         & (mlll >100)
-#         & (events.mjj>500)
-#         & (best_z_mass >= 91.2 - 15)
-#         & (best_z_mass <= 91.2 + 15)
-#         & (events.mjj > 500)
-#         & (events.PuppiMET.pt > 30)
-#         & (abs(events.detajj) > 2.5)
-#         & (events.Zeppenfeld_Z <= 1.0)
-#     )
+    # 9. Build final mask including mass window
+    mask = ( #(ak.num(events.Lepton) >= 3)      
+        (valid_z)
+        & (mlll >100)
+        &(best_z_mass >= 91.2 - 15)
+        & (best_z_mass <= 91.2 + 15)
+    )
 
-#     return mask, best_z_pair, best_z_mass
+    return mask, best_z_pair, best_z_mass
+
 
 # regions["WZ"] = {
 #     "func": lambda events: (ak.num(events.Lepton) >= 3) &  (events.Lepton[:, 0].pt > 25) & (events.Lepton[:, 1].pt > 20) & (events.Lepton[:, 2].pt > 10) & select_wz_region(events)[0],
@@ -303,8 +301,23 @@ regions["SSWWb"] = {
 
 regions["WZ"] = {
     "func": lambda events: 
-            #& select_wz_region(events)[0]
-            (events.bVeto),
+            select_wz_region(events)[0]
+            # &  valid_z
+            # & (mlll >100)
+            # & (best_z_mass >= 91.2 - 15)
+            # & (best_z_mass <= 91.2 + 15)
+             (events.mjj > 500)
+            &(events.PuppiMET.pt > 30)
+            & (abs(events.detajj) > 2.5)
+            & (events.Zeppenfeld_Z <= 1.0)
+            & (ak.num(events.Lepton) >= 3)
+            & (ak.fill_none(ak.pad_none(events.Lepton, 3)[:, 0].pt > 25, False))
+            & (ak.fill_none(ak.pad_none(events.Lepton, 3)[:, 1].pt > 20, False))
+            & (ak.fill_none(ak.pad_none(events.Lepton, 3)[:, 2].pt > 10, False))
+            # & (ak.pad_none(events.Lepton, 3)[:, 0].pt > 25, False)
+            # & (ak.pad_none(events.Lepton, 3)[:, 1].pt > 20, False)
+            # & (ak.pad_none(events.Lepton, 3)[:, 2].pt > 10, False)
+            & (events.bVeto),
             #& ak.num(events.Lepton) >= 3,
      "mask": 0,
 }
