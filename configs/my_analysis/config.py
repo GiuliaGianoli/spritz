@@ -306,7 +306,7 @@ regions["WZ"] = {
             # & (mlll >100)
             # & (best_z_mass >= 91.2 - 15)
             # & (best_z_mass <= 91.2 + 15)
-             (events.mjj > 500)
+            & (events.mjj > 500)
             &(events.PuppiMET.pt > 30)
             & (abs(events.detajj) > 2.5)
             & (events.Zeppenfeld_Z <= 1.0)
