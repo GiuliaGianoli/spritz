@@ -1,0 +1,101 @@
+{
+  "schema_version": 2,
+  "description": null,
+  "corrections": [
+    {
+      "name": "EleFR_jet45",
+      "description": "Ele Fake/Prompt Rate",
+      "version": 1,
+      "inputs": [
+        {
+          "name": "pt",
+          "type": "real",
+          "description": null
+        },
+        {
+          "name": "eta",
+          "type": "real",
+          "description": null
+        }
+      ],
+      "output": {
+        "name": "weight",
+        "type": "real",
+        "description": null
+      },
+      "generic_formulas": null,
+      "data": {
+        "nodetype": "multibinning",
+        "inputs": [
+          "pt",
+          "eta"
+        ],
+        "edges": [
+          [
+            10.0,
+            15.0,
+            20.0,
+            25.0,
+            30.0,
+            35.0,
+            40.0,
+            45.0,
+            50.0
+          ],
+          [
+            0.0,
+            0.5,
+            1.0,
+            1.5,
+            2.0,
+            2.5
+          ]
+        ],
+        "content": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.07775597274303436,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "flow": "clamp"
+      }
+    }
+  ],
+  "compound_corrections": null
+}

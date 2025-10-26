@@ -15,6 +15,8 @@ from spritz.framework.framework import (
 
 path_fw = get_fw_path()
 
+NO_FAKE_REGIONS = {"WZ"}
+
 
 def renorm(h, xs, sumw, lumi):
     scale = xs * 1000 * lumi / sumw
@@ -24,6 +26,16 @@ def renorm(h, xs, sumw, lumi):
     a.value = a.value * scale
     a.variance = a.variance * scale * scale
     return _h
+
+# def renorm(h, xs, sumw, lumi):
+#     scale = 1 / sumw
+#     # print(scale)
+#     _h = h.copy()
+#     a = _h.view(True)
+#     a.value = a.value * scale
+#     a.variance = a.variance * scale * scale
+#     return _h
+
 
 
 def hist_move_content(h, ifrom, ito):
@@ -145,7 +157,8 @@ def get_variations(h):
 
 
 def blind(region, variable, edges):
-    if "sr" in region and "dnn" in variable:
+    #if "sr" in region and "dnn" in variable:
+    if "VBS-SSWW" in region:
         return np.arange(0, len(edges)) > len(edges) / 2
 
 
@@ -157,18 +170,36 @@ def single_post_process(results, region, variable, samples, xss, nuisances, lumi
                 results[sample]["histos"][variable]
             except KeyError:
                 print(f"Could not find key {sample} in {variable}")
+            if sample not in results:
+                print(f"[WARNING] Sample '{sample}' not in results — skipping it.")
+                continue
             h = results[sample]["histos"][variable].copy()
             real_axis = list([slice(None) for _ in range(len(h.axes) - 2)])
             h = h[tuple(real_axis + [hist.loc(region), slice(None)])].copy()
             is_data = samples[histoName].get("is_data", False)
+            is_fake = samples[histoName].get("is_fake", False)
             # renorm mcs
             if not is_data:
                 h = renorm(h, xss[sample], results[sample]["sumw"], lumi)
 
             tmp_histo = h[tuple(real_axis + [hist.loc("nom")])].copy()
             hist_fold(tmp_histo, 3)
+            #per unrollare 2d
             if len(real_axis) > 1:
                 tmp_histo = hist_unroll(tmp_histo)
+            #per non mettere i fake in WZ
+            # if is_fake and (region in NO_FAKE_REGIONS):
+            #     a = tmp_histo.view(True)
+            #     a.value[...] = 0.0
+            #     a.variance[...] = 0.0
+            #     key = f"{region}/{variable}/histo_{histoName}"
+            #     if key not in dout:
+            #         dout[key] = tmp_histo.copy()
+            #     else:
+            #         dout[key] += tmp_histo.copy()
+            #     # importantissimo: salta TUTTE le nuisance per il Fake in questa regione
+            #     continue
+            #     # ------------------------------------------------------------------------
             key = f"{region}/{variable}/histo_{histoName}"
             if key not in dout:
                 dout[key] = tmp_histo.copy()
@@ -177,16 +208,41 @@ def single_post_process(results, region, variable, samples, xss, nuisances, lumi
             nom_histo = tmp_histo.copy()
 
             for nuis in nuisances:
+                # incuts = nuisances[nuis].get("cuts", None)
+                # excuts = nuisances[nuis].get("exclude_cuts", None)
+                # if incuts is not None and (region not in set(incuts)):
+                #     continue
+                # if excuts is not None and (region in set(excuts)):
+                #     continue
                 if nuisances[nuis]["type"] != "shape":
                     continue
                 if histoName not in nuisances[nuis]["samples"]:
                     continue
                 if nuisances[nuis]["kind"] in ["suffix", "weight"]:
+                    # nuis_name = nuisances[nuis]["name"]
+                    # for tag in ["up", "down"]:
+                    #     tmp_histo = h[
+                    #         tuple(real_axis + [hist.loc(f"{nuis}_{tag}")])
+                    #     ].copy()
+                    #     hist_fold(tmp_histo, 3)
+                    #     if len(real_axis) > 1:
+                    #         tmp_histo = hist_unroll(tmp_histo)
+                    #     key = f"{region}/{variable}/histo_{histoName}_{nuis_name}{tag.capitalize()}"
+                    #     if key not in dout:
+                    #         dout[key] = tmp_histo.copy()
+                    #     else:
+                    #         dout[key] += tmp_histo.copy()
                     nuis_name = nuisances[nuis]["name"]
+                    # helper per prendere una variazione in modo sicuro
+                    def safe_pick(label):
+                        try:
+                            return h[tuple(real_axis + [hist.loc(label)])].copy()
+                        except Exception:
+                            # fallback al nominale se la variazione non c'è
+                            return h[tuple(real_axis + [hist.loc("nom")])].copy()
+
                     for tag in ["up", "down"]:
-                        tmp_histo = h[
-                            tuple(real_axis + [hist.loc(f"{nuis}_{tag}")])
-                        ].copy()
+                        tmp_histo = safe_pick(f"{nuis}_{tag}")
                         hist_fold(tmp_histo, 3)
                         if len(real_axis) > 1:
                             tmp_histo = hist_unroll(tmp_histo)
@@ -195,6 +251,7 @@ def single_post_process(results, region, variable, samples, xss, nuisances, lumi
                             dout[key] = tmp_histo.copy()
                         else:
                             dout[key] += tmp_histo.copy()
+
                 nuis_kind = nuisances[nuis]["kind"]
                 if nuis_kind.endswith("envelope") or nuis_kind.endswith("square"):
                     nuis_name = nuisances[nuis]["name"]
@@ -217,6 +274,27 @@ def single_post_process(results, region, variable, samples, xss, nuisances, lumi
                         arrv = np.sqrt(np.sum(np.square(variations - arrnom), axis=0))
                         arrup = nom_histo.values() + arrv
                         arrdo = nom_histo.values() - arrv
+
+                    #per 2d non unrollati
+                    # for nuis_histo in nuisances[nuis]["samples"][histoName]:
+                    #     tmp_histo = h[tuple(real_axis + [hist.loc(nuis_histo)])].copy()
+                    #     hist_fold(tmp_histo, 3)
+                    #     variations.append(tmp_histo.values())
+
+                    variations = np.array(variations)  # shape = (N, *shape)
+                    nom_vals = nom_histo.values()      # shape = (*shape)
+
+                    if nuisances[nuis]["kind"].endswith("envelope"):
+                        arrup = np.max(variations, axis=0)   # (*shape)
+                        arrdo = np.min(variations, axis=0)
+                    elif nuisances[nuis]["kind"].endswith("square"):
+                        # broadcast del nominale su N variazioni: (N, *shape)
+                        arrnom = np.broadcast_to(nom_vals, (variations.shape[0],) + nom_vals.shape)
+                        diff = variations - arrnom
+                        arrv = np.sqrt(np.sum(diff * diff, axis=0))   # (*shape)
+                        arrup = nom_vals + arrv
+                        arrdo = nom_vals - arrv
+
                     hists = {}
                     hists["Up"] = nom_histo.copy()
                     a = hists["Up"].view()

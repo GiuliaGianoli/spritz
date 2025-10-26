@@ -30,6 +30,8 @@ btag_jes_var = [
 
 @variation_module.vary(reads_columns=[("Jet", "pt"), ("Jet", "eta")])
 def func(events, variations, ceval_btag, cfg, doVariations: bool = False):
+    if "Jet" not in events.fields or ak.count(events.Jet.pt) == 0:
+        return events, variations
     wrap_c = correctionlib_wrapper(ceval_btag["deepJet_shape"])
     nominal_branch_name = "btagSF_deepjet_shape"
     if not doVariations:
@@ -41,13 +43,15 @@ def func(events, variations, ceval_btag, cfg, doVariations: bool = False):
             | (events.Jet.hadronFlavour == 4)
             | (events.Jet.hadronFlavour == 5)
         )
-        jets_btag = ak.mask(events.Jet, mask)
+        #jets_btag = ak.mask(events.Jet, mask)
+        jets_btag = ak.mask(events.Jet, mask & (events.Jet.btagPNetB >= 0))
         btags = wrap_c(
             variation,
             jets_btag.hadronFlavour,
             abs(jets_btag.eta),
             jets_btag.pt,
-            jets_btag.btagDeepFlavB,
+            jets_btag.btagPNetB,
+            #ak.fill_none(jets_btag.btagPNetB, 0.0),
         )
         btags = ak.fill_none(btags, 1.0)
         events[("Jet", branch_name)] = btags
@@ -81,17 +85,21 @@ def func(events, variations, ceval_btag, cfg, doVariations: bool = False):
                 mask = mask & (
                     (events.Jet.hadronFlavour == 0) | (events.Jet.hadronFlavour == 5)
                 )
-            jets_btag = ak.mask(events.Jet, mask)
+            #jets_btag = ak.mask(events.Jet, mask)
+            jets_btag = ak.mask(events.Jet, mask & (events.Jet.btagPNetB >= 0))
             btags = wrap_c(
                 clib_name,
                 jets_btag.hadronFlavour,
                 abs(jets_btag.eta),
                 jets_btag.pt,
-                jets_btag.btagDeepFlavB,
+                jets_btag.btagPNetB,
             )
             btags = ak.where(
-                ak.is_none(btags, axis=1), events[("Jet", nominal_branch_name)], btags
+                ak.is_none(btags), events[("Jet", nominal_branch_name)], btags
             )
+            # btags = ak.where(
+            #     ak.is_none(btags, axis=1), events[("Jet", nominal_branch_name)], btags
+            # )
             events[branch_name] = btags
             variations.register_variation(
                 [("Jet", nominal_branch_name)], variation_name

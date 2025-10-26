@@ -1,0 +1,53 @@
+{
+    "flags": [
+      "goodVertices",
+      "globalSuperTightHalo2016Filter",
+      "HBHENoiseFilter",
+      "HBHENoiseIsoFilter",
+      "EcalDeadCellTriggerPrimitiveFilter",
+      "BadPFMuonFilter",
+      "BadPFMuonDzFilter",
+      "eeBadScFilter",
+      "ecalBadCalibFilter"
+    ],
+  
+    "puWeightsKey": "Collisions2022_359022_362760_eraEFG_GoldenJson",
+    "do_theory_variations": false,
+    "era": "Full2022EEv12",
+    "year": "2022EE",
+    "jet_sel": {
+      "jetId": 2,
+      "minpt": 15,
+      "maxeta": 4.7
+    },
+    "leptonsWP": {
+      "eleWP": "mvaWinter22V2Iso_WP90",
+      "muWP": "cut_Tight_HWW"
+    },
+    "bTag": {
+      "btagLoose": 0.0499,
+      "btagMedium": 0.2605,
+      "btagTight": 0.6915
+    },
+    "jme": {
+      "jet_veto_tag": "Summer22EE_23Sep2023_RunEFG_V1",
+      "lvl_compound": "L1L2L3Res",
+       "jet_algo": "AK4PFPuppi",
+      "jer_tag": "Summer22EE_22Sep2023_JRV1_MC",
+      "jec_tag": {
+        "mc": "Summer22EE_22Sep2023_V2_MC",
+        "data": {
+          "2022EE_E": "Summer22EE_22Sep2023_RunE_V2_DATA_L1FastJet_AK4PFPuppi",
+          "2022EE_F": "Summer22EE_22Sep2023_RunF_V2_DATA_L1FastJet_AK4PFPuppi", 
+          "2022EE_G": "Summer22EE_22Sep2023_RunG_V2_DATA_L1FastJet_AK4PFPuppi"
+       }
+      },
+      "jes": []
+    },
+    "jer_smear": "RPLME_PATH_FW/data/Full2022EEv12/clib/jer_smear.json",
+    "jet_jerc": "RPLME_PATH_FW/data/Full2022EEv12/clib/jet_jerc.json",
+    "jetvetomaps": "RPLME_PATH_FW/data/Full2022EEv12/clib/jetvetomaps.json",
+    "btagSF": "RPLME_PATH_FW/data/Full2022EEv12/clib/btagging.json",
+    "puWeights": "RPLME_PATH_FW/data/Full2022EEv12/clib/puWeights.json",
+    "lumiMask": "RPLME_PATH_FW/data/Full2022EEv12/lumimask/Cert_Collisions2022_355100_362760_Golden.json"
+  }

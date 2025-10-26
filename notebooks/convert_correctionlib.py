@@ -14,22 +14,34 @@ import rich
 import uproot
 from data.common.LeptonSel_cfg import ElectronWP, MuonWP
 
-path_jsonpog = "/Users/giorgiopizzati/Downloads/jsonpog-integration-master/POG"
+#path_jsonpog = "/Users/giorgiopizzati/Downloads/jsonpog-integration-master/POG"
 path_jsonpog = "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG"
 url_latinos = "https://raw.githubusercontent.com/latinos/LatinoAnalysis/UL_production/NanoGardener/python/data/scale_factor/"
 for ERA, year in [
-    ("Full2018v9", "2018"),
-    ("Full2017v9", "2017"),
-    ("Full2016v9HIPM", "2016preVFP"),
-    ("Full2016v9noHIPM", "2016postVFP"),
+    ("Full2022EEv12", "2022Re-recoE+PromptFG"),
 ]:
-    fname = (
-        path_jsonpog
-        + list(ElectronWP[ERA]["TightObjWP"]["mvaFall17V2Iso_WP90"]["tkSF"].values())[
-            0
-        ].split("POG")[-1]
-    )
-    print(fname)
+    print(ElectronWP[ERA]["TightObjWP"]["mvaWinter22V2Iso_WP90"]["tkSF"])
+    print(list(ElectronWP[ERA]["TightObjWP"]["mvaWinter22V2Iso_WP90"]["tkSF"].values()))
+    file_list = list(ElectronWP[ERA]["TightObjWP"]["mvaWinter22V2Iso_WP90"]["tkSF"].values())[0]
+
+    print("Lista:", file_list)
+
+    # Percorso del file JSON (il terzo elemento della lista)
+    json_path = file_list[2]
+    print("Path completo nel JSON:", json_path)
+
+    relative_path = json_path.split("POG")[-1]
+    print("Path relativo:", relative_path)
+
+    fname = path_jsonpog + relative_path
+    print("Path finale del file:", fname)
+    # fname = (
+    #     path_jsonpog
+    #     + list(ElectronWP[ERA]["TightObjWP"]["mvaWinter22V2Iso_WP90"]["tkSF"].values())[
+    #         0
+    #     ].split("POG")[-1]
+    # )
+    # print(fname)
 
     ceval = correctionlib.CorrectionSet.from_file(fname)
 
@@ -68,7 +80,6 @@ for ERA, year in [
         for valType in ["sf", "sfdown", "sfup"]:
             sf_ind = find_key(valType, real_content)
             sf = real_content[sf_ind]["value"]["content"]
-
             wp_ind = find_key(wp, sf)
             obj = sf[wp_ind]["value"]
             content = np.array(obj["content"])
@@ -121,7 +132,7 @@ for ERA, year in [
             return False
         return True
 
-    for wp in ["RecoBelow20", "RecoAbove20"]:
+    for wp in ["RecoBelow20", "Reco20to75", "RecoAbove75"]:
         valTypes = ["sf", "sfdown", "sfup"]
         systs = ["nominal", "syst_down", "syst_up"]
         h, cset = get_cset_electron(year, wp, return_histo=True)
@@ -137,7 +148,12 @@ for ERA, year in [
             for eta, pt in rand_inputs:
                 # new_val = h[hist.loc(syst), hist.loc(eta), hist.loc(pt)]
                 new_val = ceval_new.evaluate(syst, eta, pt)
-                old_val = ceval["UL-Electron-ID-SF"].evaluate(
+                print("Chiavi disponibili nel CorrectionSet:")
+                print(list(ceval.keys()))
+                for var in ceval["Electron-ID-SF"].inputs:
+                    if var.name == "year":
+                        print(var.type)
+                old_val = ceval["Electron-ID-SF"].evaluate(
                     year, valType, wp, eta, pt
                 )
                 if different_val(new_val, old_val):
@@ -147,158 +163,52 @@ for ERA, year in [
         print("Everything ok for", wp)
 
     csets = []
-    for wp in ["RecoBelow20", "RecoAbove20"]:
+    for wp in ["RecoBelow20", "Reco20to75", "RecoAbove75"]:
         csets.append(get_cset_electron(year, wp))
         rich.print(csets[-1])
 
-    def get_cset_electron_wp():
-        dfs = {}
-
-        d = ElectronWP[ERA]["TightObjWP"]["mvaFall17V2Iso_WP90"]["wpSF"]
-        all_eras = list(d.keys())
-        all_files = list(d.values())
-        all_files = list(map(lambda k: k.split("scale_factor")[-1], all_files))
-
-        for eras, fname in zip(all_eras, all_files):
-            with open("test_sf.txt", "w") as file:
-                url = f"https://raw.githubusercontent.com/latinos/LatinoAnalysis/UL_production/NanoGardener/python/data/scale_factor/{fname}"
-                print(
-                    "downloading",
-                    url,
-                )
-                r = requests.get(url)
-                file.write(r.text)
-
-            columns = "effData statErrData systErrData effMC statErrMC systErrMC effDataAltBkg effDataAltSig effMCAltMC effMCTagSel"
-            columns = columns.split(" ")
-            df = pd.read_csv(
-                "test_sf.txt",
-                sep="\t",
-                skiprows=3,
-                header=None,
-                names=["eta_l", "eta_h", "pt_l", "pt_h"] + columns,
-            )
-            df
-            for var in ["eta", "pt"]:
-                df[var] = list(zip(df[var + "_l"], df[var + "_h"]))
-                del df[var + "_l"]
-                del df[var + "_h"]
-
-            df["sf"] = df["effData"] / df["effMC"]
-            df["sf_err"] = (
-                np.sqrt(
-                    (df["statErrData"] / df["effData"]) ** 2
-                    + (df["statErrMC"] / df["effMC"]) ** 2
-                )
-                * df["sf"]
-            )
-            df["sf_syst"] = (
-                np.sqrt(
-                    (df["systErrData"] / df["effData"]) ** 2
-                    + (df["systErrMC"] / df["effMC"]) ** 2
-                )
-                * df["sf"]
-            )
-            dfs[eras] = df
-
-        eras_bin = list(map(lambda k: int(k.split("-")[0]), all_eras))
-        eras_bin.append(int(all_eras[-1].split("-")[-1]) + 0.01)
-        eras_bin = np.array(eras_bin)
-        print(eras_bin)
-
-        eta_bin = np.array(
-            list(map(lambda k: k[0], np.unique(df["eta"])))
-            + [np.unique(df["eta"])[-1][-1]]
-        )
-        pt_bin = np.array(
-            list(map(lambda k: k[0], np.unique(df["pt"])))
-            + [np.unique(df["pt"])[-1][-1]]
-        )
-        h = hist.Hist(
-            hist.axis.Variable(eras_bin, name="eras", flow=False),
-            hist.axis.StrCategory(["nominal", "stat", "syst"], name="syst"),
-            hist.axis.Variable(eta_bin, name="eta"),
-            hist.axis.Variable(pt_bin, name="pt"),
-            hist.storage.Double(),
-        )
-        for eras in all_eras:
-            _eras = (int(eras.split("-")[0]) + int(eras.split("-")[1])) / 2
-            print(
-                eras,
-                _eras,
-            )
-            for syst, sf_name in zip(
-                ["nominal", "stat", "syst"], ["sf", "sf_err", "sf_syst"]
-            ):
-                for pt_c in (pt_bin[1:] + pt_bin[:-1]) / 2:
-                    for eta_c in (eta_bin[1:] + eta_bin[:-1]) / 2:
-                        for i, (ipt, ieta) in enumerate(
-                            list(zip(list(df["pt"]), list(df["eta"])))
-                        ):
-                            if ieta[0] <= eta_c < ieta[1] and ipt[0] <= pt_c < ipt[1]:
-                                h[
-                                    hist.loc(_eras),
-                                    hist.loc(syst),
-                                    hist.loc(eta_c),
-                                    hist.loc(pt_c),
-                                ] = dfs[eras][sf_name][i]
-            print(
-                "hist loc",
-                h[
-                    hist.loc(_eras),
-                    :,
-                    :,
-                    :,
-                ],
-            )
-
-        h.name = "Electron_WP_SF"
-        h.label = "out"
-        return correctionlib.convert.from_histogram(h)
-
-    csets.append(get_cset_electron_wp())
-    rich.print(csets[-1])
+    #Qui parte tutta diversa
+    electron_cset = correctionlib.CorrectionSet.from_file("electron.json")
+    csets.append(electron_cset["Electron-ID-SF"])
 
     # Muons SF
 
-    corrections = {
-        "Muon_IdSF": "NUM_TightHWW_DEN_TrackerMuons_eta_pt",
-        "Muon_IsoSF": "NUM_TightHWW_ISO_DEN_TightHWW_eta_pt",
-    }
+    # for corrName, histoName in corrections.items():
+    #      csets.append(get_muon_cset(corrName, histoName))
 
-    def get_muon_cset(corrName, histoName):
-        url = f"https://github.com/latinos/LatinoAnalysis/raw/UL_production/NanoGardener/python/data/scale_factor/{ERA}/{histoName}.root"
-        with open("test_sf.root", "wb") as file:
-            file.write(requests.get(url).content)
-        f = uproot.open("test_sf.root")
-        h = f[histoName].to_hist()
-        axis = [
-            hist.axis.Variable(axis.edges, name=name)
-            for axis, name in zip(h.axes, ["eta", "pt"])
-        ]
-        data = np.array([h.values(), np.sqrt(h.variances())])
-        h_sf = hist.Hist(
-            hist.axis.StrCategory(["nominal", "syst"], name="syst"), *axis, data=data
-        )
-        h_sf.name = corrName
-        h_sf.label = "out"
-        cset = correctionlib.convert.from_histogram(h_sf)
-        return cset
+    muon_cset1 = correctionlib.CorrectionSet.from_file("muon_scale_Run2022E.json")
+    muon_cset2 = correctionlib.CorrectionSet.from_file("muonSF_latinos_HWW.json")
 
-    for corrName, histoName in corrections.items():
-        csets.append(get_muon_cset(corrName, histoName))
-        rich.print(csets[-1])
+    print("muon_scale_Run2022E keys:", list(muon_cset1.keys()))
+    print("muonSF_latinos_HWW keys:", list(muon_cset2.keys()))
+
+    #csets.append(muon_cset1["NUM_TightIDIso_DEN_TightID"]) 
+    #csets.append(muon_cset1["NUM_TightIDMiniIso_DEN_TightID"]) 
+    # csets.append(muon_cset1["NUM_TightID_DEN_TrackerMuons"])
+
+    #csets.append(muon_cset2["NUM_LoosePFIso_DEN_TightID_HWW"])
+    csets.append(muon_cset2["NUM_TightID_HWW_DEN_TrackerMuons"]) 
+    # csets.append(muon_cset2["NUM_TightID_HWW_LooseIso_tthMVA_DEN_LoosePFIso"])
+    # csets.append(muon_cset2["NUM_TightID_HWW_TightIso_tthMVA_DEN_TightPFIso"])
+    csets.append(muon_cset2["NUM_TightPFIso_DEN_TightID_HWW"])
+
+    print(type(muon_cset2["NUM_LoosePFIso_DEN_TightID_HWW"]))             
+
 
     # Save everything
 
     cset = correctionlib.schemav2.CorrectionSet(
-        schema_version=2, description="", corrections=csets
-    )
+          schema_version=2, description="", corrections=csets
+     )
 
-    rich.print(cset)
+    # rich.print(cset)
 
-    import os
+    # import os
 
     # os.makedirs(f"../data/{ERA}/clib", exist_ok=True)
     # with gzip.open(f"../data/{ERA}/clib/lepton_sf.json.gz", "wt") as fout:
     #     fout.write(cset.json(exclude_unset=True))
+    # final_cset = correctionlib.schemav2.CorrectionSet(schema_version=2, corrections=csets)
+
+    # with open("lepton_sf.json", "w") as fout:
+    #     fout.write(final_cset.model_dump_json(indent=2))

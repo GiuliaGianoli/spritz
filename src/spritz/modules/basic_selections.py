@@ -10,7 +10,7 @@ from numba.typed import Dict
 
 
 def pass_trigger(events, year):
-    keys = ["SingleEle", "DoubleEle", "SingleMu", "DoubleMu"]
+    keys = ["SingleEle", "DoubleEle", "SingleMu", "DoubleMu", "EleMu"]
     for key in keys:
         events[key] = ak.ones_like(events.weight) == 0.0  # all False
 
@@ -31,7 +31,7 @@ def pass_trigger(events, year):
                     )
 
                 tmp = tmp | events.HLT[val[len("HLT_") :]]
-            events[key] = events[key] | (events.run_period == era) & tmp
+            events[key] = events[key] | tmp
 
     pass_trigger = ak.ones_like(events.weight) == 0.0  # all False
     for key in keys:

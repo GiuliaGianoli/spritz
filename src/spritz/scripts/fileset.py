@@ -50,6 +50,59 @@ def main():
     rucio_client = rucio_utils.get_rucio_client()
     # DE|FR|IT|BE|CH|ES|UK
     good_sites = ["IT", "FR", "BE", "CH", "UK", "ES", "DE", "US"]
+    
+    # max_files = 1
+    # for dname in files:
+    #     if "query" not in files[dname]:
+    #         continue
+    #     dataset = files[dname]["query"]
+    #     print("Checking", dname, "files with query", dataset)
+    #     try:
+    #         (
+    #             outfiles,
+    #             outsites,
+    #             sites_counts,
+    #         ) = rucio_utils.get_dataset_files_replicas(
+    #             dataset,
+    #             allowlist_sites=[],
+    #             blocklist_sites=[
+    #                 "T3_IT_Trieste",
+    #             ],
+    #             regex_sites=r"T[123]_(IT|FR|BE|CH|UK|ES|DE|US)_\w+",
+    #             mode="full",
+    #             client=rucio_client,
+    #         )
+    #     except Exception as e:
+    #         print(f"\n[red bold] Exception: {e}[/]")
+    #         sys.exit(1)
+
+    #     url = "https://cmsweb.cern.ch/dbs/prod/global/DBSReader"
+    #     api = DbsApi(url=url)
+    #     filelist = api.listFiles(dataset=dataset, detail=1)
+
+    #     file_counter = 0  # ⬅️ Inizializza contatore
+
+    #     for replicas, _ in zip(outfiles, outsites):
+    #         if file_counter >= max_files:
+    #             break  # ⬅️ Limita il numero di file per dataset
+
+    #         prefix = "/store/data"
+    #         if prefix not in replicas[0]:
+    #             prefix = "/store/mc"
+    #         logical_name = prefix + replicas[0].split(prefix)[-1]
+
+    #         right_file = list(
+    #             filter(lambda k: k["logical_file_name"] == logical_name, filelist)
+    #         )
+    #         if len(right_file) == 0:
+    #             raise Exception("File present in rucio ma non in DBS!", logical_name)
+    #         if len(right_file) > 1:
+    #             raise Exception("File duplicato in DBS!", logical_name)
+
+    #         nevents = right_file[0]["event_count"]
+    #         files[dname]["files"].append({"path": replicas, "nevents": nevents})
+    #         file_counter += 1  # ⬅️ Aggiorna contatore
+
     for dname in files:
         if "query" not in files[dname]:
             continue

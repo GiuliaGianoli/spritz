@@ -20,11 +20,11 @@ def jetSel(events, cfg):
     else:
         puId_shift = 1 << 0
 
-    pass_puId = ak.values_astype(jet.puId & puId_shift, bool)
+    #pass_puId = ak.values_astype(jet.puId & puId_shift, bool)
     select = jet.pt >= minpt
     select = select & (abs(jet.eta) <= maxeta)
     select = select & (jet.jetId >= jetId)
-    select = select & (pass_puId | (jet.pt > 50.0))
+    select = select & ((jet.pt > minpt))
     events["Jet"] = events.Jet[select]
     return events
 

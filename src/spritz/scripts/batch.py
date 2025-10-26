@@ -20,9 +20,10 @@ def preprocess_chunks(year):
         forms_era = json.load(file)
     forms = add_dict(forms_common, forms_era)
     new_chunks = read_chunks("data/chunks.pkl")
-
     for i, chunk in enumerate(new_chunks):
         new_chunks[i]["data"]["read_form"] = forms[chunk["data"]["read_form"]]
+
+    # new_chunks = new_chunks[:58]
     return new_chunks
 
 
@@ -56,13 +57,13 @@ def submit(
 ):
     machines = [
         # # "clipper.hcms.it",
-        # "pccms01.hcms.it",
-        # "pccms02.hcms.it",
+         "pccms01.hcms.it",
+         "pccms02.hcms.it",
         "pccms04.hcms.it",
         # # "pccms08.hcms.it",
         # "pccms11.hcms.it",
-        # "clipper.hcms.it",
-        # "empire.hcms.it",
+         "clipper.hcms.it",
+         "empire.hcms.it",
         "pccms12.hcms.it",
         "pccms13.hcms.it",
         "pccms14.hcms.it",
@@ -114,7 +115,7 @@ def submit(
     txtjdl += "error  = $(Folder)/err.txt\n"
     txtjdl += "log    = $(Folder)/log.txt\n"
     txtjdl += "request_cpus=1\n"
-    txtjdl += "request_memory=2000\n"
+    txtjdl += "request_memory=8000\n"
     if len(machines) > 0:
         txtjdl += (
             "Requirements = "
@@ -141,7 +142,7 @@ def main():
     path_an = os.path.abspath(".")
     an_dict = get_analysis_dict()
     chunks = preprocess_chunks(an_dict["year"])
-    runner_default = f"{get_fw_path()}/src/spritz/runners/runner_default.py"
+    runner_default = f"{get_fw_path()}/src/spritz/runners/runner_ssww.py"
     runner = an_dict.get("runner", runner_default)
     dryRun = False
 

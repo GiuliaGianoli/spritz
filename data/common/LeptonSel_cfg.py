@@ -16,7 +16,7 @@ ElectronWP = {
                     # Common cuts
                     "True": [
                         'abs(electron_col[LF_idx]["eta"]) < 2.5',
-                        'electron_col[LF_idx]["cutBased"] >= 3',
+                        'electron_col[LF_idx]["cutBased"] >= 4', #prima era 3 
                         'electron_col[LF_idx]["convVeto"] == 1',
                     ],
                     # Barrel
@@ -94,6 +94,42 @@ ElectronWP = {
                 },
                 "fakeW": "data/fake_prompt_rates/Full2022EEv12/mvaWinter22V2Iso_WP90/",
             },
+
+            "cutBased_LooseID_tthMVA_Run3": {
+                "cuts": {
+                    "True": [
+                        'abs(electron_col[LF_idx]["eta"]) < 2.5',
+                        'electron_col[LF_idx]["cutBased"] >= 2',
+                        'electron_col[LF_idx]["mvaTTH"] > 0.90',
+                        'electron_col[LF_idx]["convVeto"] == 1',
+                    ],
+                    'abs(electron_col[LF_idx]["eta"]) <= 1.479': [
+                        'abs(electron_col[LF_idx]["dxy"]) < 0.05',
+                        'abs(electron_col[LF_idx]["dz"])  < 0.1',
+                    ],
+                    'abs(electron_col[LF_idx]["eta"]) > 1.479': [
+                        'abs(electron_col[LF_idx]["dxy"]) < 0.1',
+                        'abs(electron_col[LF_idx]["dz"]) <  0.2',
+                    ],
+                },
+                "tkSF": {
+                    "1-1": [
+                        "2022Re-recoE+PromptFG",
+                        "Electron-ID-SF",
+                        "data/jsonpog-integration/POG/EGM/2022_Summer22EE/electron.json.gz",
+                    ]
+                },
+                "wpSF": {
+                    "1-1": [
+                        "2022Re-recoE+PromptFG",
+                        "Electron-ID-SF",
+                        "passingTTHMVA",
+                        "data/scale_factor/Full2022EEv12/electron.json",
+                    ]
+                },
+                "fakeW": "data/fake_prompt_rates/Full2022EEv12/cutBased_LooseID_tthMVA/",
+            },
+
         },
     },
     "Full2018v9": {
@@ -463,6 +499,43 @@ MuonWP = {
                 },
                 "fakeW": "data/fake_prompt_rates/Full2022EEv12/cut_Tight_HWW/",
             },
+            "cut_TightID_pfIsoTight_HWW_tthmva_67": {
+                "cuts": {
+                    "True": [
+                        'abs(muon_col[LF_idx]["eta"]) < 2.4',
+                        'muon_col[LF_idx]["tightId"] == 1',
+                        'abs(muon_col[LF_idx]["dz"]) < 0.1',
+                        'muon_col[LF_idx]["pfIsoId"] >= 4',   # Tight PF Iso
+                        'muon_col[LF_idx]["mvaTTH"] > 0.67',
+                    ],
+                    'muon_col[LF_idx]["pt"] <= 20.0': [
+                        'abs(muon_col[LF_idx]["dxy"]) < 0.01',
+                    ],
+                    'muon_col[LF_idx]["pt"] > 20.0': [
+                        'abs(muon_col[LF_idx]["dxy"]) < 0.02',
+                    ],
+                },
+                "idSF": {
+                    "1-1": [
+                        "NUM_TightID_HWW_DEN_TrackerMuons",
+                        "data/scale_factor/Full2022v12/muonSF_latinos_HWW.json"
+                    ]
+                },
+                "isoSF": {
+                    "1-1": [
+                        "NUM_TightPFIso_DEN_TightID_HWW",
+                        "data/scale_factor/Full2022v12/muonSF_latinos_HWW.json"
+                    ]
+                },
+                "tthSF": {
+                    "1-1": [
+                        "NUM_TightID_HWW_TightIso_tthMVA_DEN_TightPFIso",
+                        "data/scale_factor/Full2022v12/muonSF_latinos_HWW.json"
+                    ]
+                },
+                "fakeW": "data/fake_prompt_rates/Full2022v12/cut_TightID_HWW_TightPFIso_tthMVA/",
+            }
+
         },
     },
     "Full2018v9": {

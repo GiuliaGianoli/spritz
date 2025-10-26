@@ -5,6 +5,7 @@ dask-awkward
 numpy
 vector
 pandas
+correctionlib git@github.com:giorgiopizz/correctionlib
 onnxruntime
 hist
 matplotlib

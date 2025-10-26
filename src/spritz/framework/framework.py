@@ -75,6 +75,7 @@ def read_events(filename, start=0, stop=100, read_form={}):
     )
     f = uproot.open(filename, **uproot_options)
     tree = f["Events"]
+    #print("Le branche nel TTree Events :", tree.keys()) 
     start = min(start, tree.num_entries)
     stop = min(stop, tree.num_entries)
     if start >= stop:
@@ -104,6 +105,7 @@ def read_events(filename, start=0, stop=100, read_form={}):
         decompression_executor=uproot.source.futures.TrivialExecutor(),
         interpretation_executor=uproot.source.futures.TrivialExecutor(),
     )
+    #print("Le branche disponibili sono :", ak.fields(events_bad_form))
     f.close()
 
     for coll in form:
@@ -134,36 +136,95 @@ def read_events(filename, start=0, stop=100, read_form={}):
 
     print("created events")
     _events = ak.zip(events, depth_limit=1)
+    #print("Le branche disponibili sono :", ak.fields(_events))
+
     del events
     gc.collect()
     return _events
 
 
-def add_dict(d1, d2):
+# def add_dict(d1, d2):
+#     if isinstance(d1, dict):
+#         d = {}
+#         common_keys = set(list(d1.keys())).intersection(list(d2.keys()))
+#         for key in common_keys:
+#             d[key] = add_dict(d1[key], d2[key])
+#         for key in d1:
+#             if key in common_keys:
+#                 continue
+#             d[key] = d1[key]
+#         for key in d2:
+#             if key in common_keys:
+#                 continue
+#             d[key] = d2[key]
+
+#         return d
+#     elif isinstance(d1, ak.highlevel.Array):
+#         return ak.concatenate([d1, d2])
+#     elif isinstance(d1, np.ndarray) and len(d1.shape) != 0:
+#         print("Debug np", d1, d2)
+#         return np.concatenate([d1, d2])
+#     elif isinstance(d1, set):
+#         return d1.union(d2)
+#     else:
+#         return d1 + d2
+
+errors_found = []
+
+def add_dict(d1, d2, _path="ROOT"):
+    import numpy as np
+    import awkward as ak
+    import hist
+
     if isinstance(d1, dict):
         d = {}
-        common_keys = set(list(d1.keys())).intersection(list(d2.keys()))
+        common_keys = set(d1.keys()).intersection(d2.keys())
         for key in common_keys:
-            d[key] = add_dict(d1[key], d2[key])
+            try:
+                d[key] = add_dict(d1[key], d2[key], _path + f"->{key}")
+            except Exception as e:
+                print(f"\n[DEBUG] ❌ Failed merging key: {_path + f'->{key}'}")
+                print(f"  Type d1: {type(d1[key])}, Type d2: {type(d2[key])}")
+                if isinstance(d1[key], hist.Hist) and isinstance(d2[key], hist.Hist):
+                    print(f"  --> d1 axes: {[ax.name for ax in d1[key].axes]}")
+                    print(f"  --> d2 axes: {[ax.name for ax in d2[key].axes]}")
+                    print(f"  --> d1 syst categories: {d1[key].axes[-1]}")
+                    print(f"  --> d2 syst categories: {d2[key].axes[-1]}")
+                errors_found.append(_path + f"->{key}")
+                continue  # Skip this key and continue
         for key in d1:
-            if key in common_keys:
-                continue
-            d[key] = d1[key]
+            if key not in common_keys:
+                d[key] = d1[key]
         for key in d2:
-            if key in common_keys:
-                continue
-            d[key] = d2[key]
-
+            if key not in common_keys:
+                d[key] = d2[key]
         return d
+
     elif isinstance(d1, ak.highlevel.Array):
         return ak.concatenate([d1, d2])
     elif isinstance(d1, np.ndarray) and len(d1.shape) != 0:
-        print("Debug np", d1, d2)
         return np.concatenate([d1, d2])
     elif isinstance(d1, set):
         return d1.union(d2)
+    elif isinstance(d1, hist.Hist) and isinstance(d2, hist.Hist):
+        try:
+            return d1 + d2
+        except Exception as e:
+            print(f"\n[ERROR] ❌ Cannot merge histograms at {_path}")
+            print(f"  --> d1 axes names: {[ax.name for ax in d1.axes]}")
+            print(f"  --> d2 axes names: {[ax.name for ax in d2.axes]}")
+            print(f"  --> d1 syst: {d1.axes[-1]}")
+            print(f"  --> d2 syst: {d2.axes[-1]}")
+            errors_found.append(_path)
+            return d1  # or `return None` if you want to detect this downstream
     else:
         return d1 + d2
+
+
+
+    
+
+
 
 
 def add_dict_iterable(iterable):

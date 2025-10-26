@@ -53,6 +53,7 @@ def make_datacard(
         name = samples[sample_name].get("name", sample_name)
         is_signal = samples[sample_name].get("is_signal", False)
         is_data = samples[sample_name].get("is_data", False)
+        is_fake = samples[sample_name].get("is_fake", False)
         noStat = samples[sample_name].get("noStat", False)
 
         if is_signal:
@@ -62,10 +63,10 @@ def make_datacard(
             idx = bkg_idx
             bkg_idx += 1
 
-        if is_data:
+        if is_data and not is_fake:
             h_data = h.copy()
 
-        if is_data and name != "Data":
+        if is_data and not is_fake and name != "Data":
             raise Exception("Cannot use is_data with a name != 'Data'")
 
         if noStat:
@@ -73,7 +74,7 @@ def make_datacard(
             histo_view.variance = np.zeros_like(histo_view.variance)
 
         output_file[f"histo_{name}"] = h
-        if is_data:
+        if is_data and not is_fake:
             continue
 
         rows[0].append(bin_name)
@@ -82,6 +83,12 @@ def make_datacard(
         rows[3].append(str(np.sum(h.values(True))))
 
         for systematic in nuisances:
+            incuts = nuisances[systematic].get("cuts")
+            excuts = nuisances[systematic].get("exclude_cuts")
+            if incuts is not None and region not in incuts:
+                continue
+            if excuts is not None and region in excuts:
+                continue
             if nuisances[systematic]["type"] == "auto":
                 enable_stat = True
                 continue
@@ -154,14 +161,19 @@ def main():
     regions = analysis_dict["regions"]
     variables = analysis_dict["variables"]
     fin = uproot.open("histos.root")
-    good_regions = [
-        f"{region}_{cat}"
-        for region in ["sr_inc", "dypu_cr", "top_cr"]
-        for cat in ["ee", "mm"]
-    ]
+    # good_regions = [
+    #     f"{region}_{cat}"
+    #     for region in ["sr_inc", "dypu_cr", "top_cr"]
+    #     for cat in ["ee", "mm"]
+    # ]
+    #good_regions=["VBS_SSWW", "SSWWb", "InverseMET","VBS_SSWW_(ee)","VBS_SSWW_(mumu)", "VBS_SSWW_(emu)", "VBS_SSWW_(mue)","Low_mjj"]
+    good_regions=["SSWWb"]
+    good_variables=["mjj_b"]
+    #good_regions=["WZ", "WZb"]
     # good_variables = ["mjj", "dnn", "phil1"]
     # good_variables = ["detajj_fits", "dnn_fits", "MET_fits"]
-    good_variables = ["detajj_fits", "dnn_ptll", "MET_fits"]
+    #good_variables = ["detajj_fits", "dnn_ptll", "MET_fits"]
+    #good_variables = ["mjj",]
     for region in good_regions:
         for variable in good_variables:
             if "axis" not in variables[variable]:

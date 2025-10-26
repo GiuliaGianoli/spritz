@@ -1,0 +1,240 @@
+{
+  "headers": [
+    "# Cross section DB for Ultra-Legacy samples",
+    "# Units in pb",
+    "#",
+    "# Detailed references at: https://docs.google.com/spreadsheets/d/1IEfle0H1V3ih2JVFpYckmTd-ACTBqgBRIsFydegGgPQ/edit?usp=sharing",
+    "#",
+    "# References",
+    "#",
+    "#       A       https://twiki.cern.ch/twiki/bin/view/CMS/StandardModelCrossSectionsat13TeV              ",
+    "#       B       https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO              ",
+    "#       C       https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt1314TeV              ",
+    "#       D       https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopRefXsec              ",
+    "#       E       https://twiki.cern.ch/twiki/bin/view/CMS/SummaryTable1G25ns",
+    "#       F       https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV",
+    "#       F2       https://github.com/latinos/LatinoAnalysis/blob/master/Tools/python/HiggsXSection.py",
+    "#       G       https://twiki.cern.ch/twiki/bin/view/CMS/GenXsecTaskForce              ",
+    "#       H       http://arxiv.org/pdf/1307.7403v1.pdf              ",
+    "#       I       https://twiki.cern.ch/twiki/bin/viewauth/CMS/HowToGenXSecAnalyzer              ",
+    "#       J       https://svnweb.cern.ch/cern/wsvn/LHCDMF/trunk/doc/tex/TTBar_Xsecs_Appendix.tex",
+    "#       K       https://twiki.cern.ch/twiki/bin/view/CMS/HiggsWW13TeVProductionMassScan (powheg numbers)",
+    "#       L       https://twiki.cern.ch/twiki/bin/view/CMS/HiggsWW13TeVProduction (powheg numbers)",
+    "#       M       https://github.com/shu-xiao/MadGraphScanning/blob/master/diffCrossSection/madGraph.txt",
+    "#       N       MCM",
+    "#       O       https://twiki.cern.ch/twiki/pub/LHCPhysics/LHCHXSWG/Higgs_XSBR_YR4_update.xlsx",
+    "#       P       https://drive.google.com/file/d/0B7mfFpGbPaMvb0ZtMlJfdXhJb2M/view",
+    "#       Q       #https://indico.cern.ch/event/448517/session/0/contribution/16/attachments/1164999/1679225/Long_Generators_WZxsec_05_10_15.pdf",
+    "#       R       https://cms-pdmv.cern.ch/mcm/requests?page=0&prepid=B2G-RunIISummer15GS*&dataset_name=TTbarDMJets_*scalar_Mchi-*_Mphi-10000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8",
+    "#       S       https://docs.google.com/spreadsheets/d/1b4qnWfZrimEGYc1z4dHl21-A9qyJgpqNUbhOlvCzjbE/edit?usp=sharing",
+    "#       T       https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageBR",
+    "#       U       https://twiki.cern.ch/twiki/pub/CMS/MonoHCombination/crossSection_ZpBaryonic_gq0p25.txt",
+    "#       V       https://twiki.cern.ch/twiki/bin/viewauth/CMS/SameSignDilepton2016",
+    "#       W       https://cms-gen-dev.cern.ch/xsdb/",
+    "#       Z       http://cms.cern.ch/iCMS/analysisadmin/cadilines?line=SMP-18-006",
+    "#       Y       https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageBSMAt13TeV",
+    "#       A1      https://indico.cern.ch/event/673253/contributions/2756806/attachments/1541203/2416962/20171016_VJetsXsecsUpdate_PH-GEN.pdf ",
+    "#       X       Unknown! - Cross section not yet there",
+    "### W+jets",
+    "# XSDB: WJets-LO XS = 53870 pb",
+    "# WJets-NNLO XS = 61526.7 pb",
+    "# k-fact = 1.14",
+    "# Sum of XS: 53330 + 8875 + 3338 = 65543",
+    "# NNLO XS = 61526.7",
+    "# k factor = 61526.7 / 65543",
+    "### DY",
+    "# DYJetsToLL_M-50 = 6077.22 --> 5129 + 951.5 + 361.4 = 6441.9 --> k-factor = 0.94",
+    "### Wgamma",
+    "### WW",
+    "# 1.4*0.0368 --> 1.4 is a k-factor, 0.0368 comes from XSDB, divided by 1000",
+    "### WZ",
+    "### ZZ",
+    "### ZG",
+    "### Top",
+    "# What does noHad mean?",
+    "# We want both of the Ws not to decay hadronically? --> 35.85 * (1 - 0.6741)^2",
+    "# All ST_s-channel samples are \"leptonDecays\" --> t->Wb->lvb",
+    "# Exception: here, the W decays hadronically (\"hadronicDecays\") --> t->Wb->qq'b",
+    "## VVV",
+    "### QCD",
+    "### Signals - XS are dummy and taken from YR4 N3LO",
+    "# https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageBR",
+    "# BR (H-->WW) = 0.2152",
+    "# BR (H-->tt) = 0.06256",
+    "# BR (H-->ZZ) = 0.02641",
+    "# ggH - XS = 48.52 pb",
+    "# 58.52*0.2152*(3*0.108)*(3*0.108)",
+    "# 48.52*0.06256",
+    "# 48.52*0.02641*(3*0.033658)*(3*0.033658)",
+    "# VBF - XS = 3.779 pb",
+    "# 3.779*0.2152*(3*0.108)*(3*0.108) ",
+    "# 3.779*0.06256",
+    "# WH - XS(W+H) = 0.8380 pb and XS(W-H) = 0.5313 pb",
+    "# 0.5313*0.2152",
+    "# 0.05967*0.2152*(3*0.108)*(3*0.108) ",
+    "# 0.8380*0.2152",
+    "# 0.09404*0.2152*(3*0.108)*(3*0.108) ",
+    "# ZH -  XS = 0.8824 pb ",
+    "# XS(ggZH) = 0.1227 pb",
+    "# XS(HZJ)  = 0.8824 - 0.1227 = 0.7597 pb",
+    "# 0.7597*0.2152",
+    "# 0.7597*0.2152*(3*0.033658)*(3*0.108)*(3*0.108)",
+    "# 0.1227*0.2152",
+    "# 0.1227*0.2152*(3*0.033658)*(3*0.108)*(3*0.108)",
+    "# ttH - XS = 0.5065",
+    "# 0.5065*(1-0.5809)",
+    "# Additional Higgs signals with non-SM parameters ",
+    "# All XS set to 1. I haven't even looked at them",
+    "# WW aTGCs"
+  ],
+  "samples": {
+
+    "SSWW_EWK": {
+         "nanoAOD": "/WWto2L2Nu-2Jets_SS_noTop_EW_TuneCP5_13p6TeV_madgraph-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM",
+         "xsec": "0.029255"
+     },
+
+    "SSWW_QCD": {
+      "nanoAOD": "/WWto2L2Nu-2Jets_SS_noTop_QCD_TuneCP5_13p6TeV_madgraph-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM",
+      "xsec" : "0.0279662"
+    },
+
+    "WZ_EWK": {
+      "nanoAOD": "/WZto3LNu-2Jets_EW_TuneCP5_13p6TeV_madgraph-madspin-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM",
+      "xsec" : "0.0429366"
+    },
+
+    "WZ_QCD": {
+      "nanoAOD": "/WZto3LNu-2Jets_QCD_TuneCP5_13p6TeV_madgraph-madspin-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM",
+      "xsec" : "0.4958618*0.70"
+    },
+
+    "SSWW_TT": {
+      "nanoAOD": "/VBS-SSWW_PolarizationTT_TuneCP5_13p6TeV_madgraph-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v3/NANOAODSIM",
+      "xsec" : "0.017635"
+    },
+
+    "SSWW_TL": {
+      "nanoAOD": "/VBS-SSWW_PolarizationTL_TuneCP5_13p6TeV_madgraph-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v1/NANOAODSIM",
+      "xsec" : "0.011700"
+    },
+
+    "SSWW_LL": {
+      "nanoAOD": "/VBS-SSWW_PolarizationLL_TuneCP5_13p6TeV_madgraph-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v3/NANOAODSIM",
+      "xsec" : "0.002190"
+    },
+
+    "W_1JET": {
+      "nanoAOD": "/WtoLNu-4Jets_1J_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM",
+      "xsec" : "9158"
+    },
+
+    "W_2JET": {
+      "nanoAOD": "/WtoLNu-4Jets_2J_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM",
+      "xsec" : "2938"
+    },
+
+    "W_3JET": {
+      "nanoAOD": "/WtoLNu-4Jets_3J_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM",
+      "xsec" : " 861.4"
+    },
+
+    "W_4JET": {
+        "nanoAOD": "/WtoLNu-4Jets_4J_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM",
+        "xsec" : " 418.6"
+    },
+  
+    "TTBAR": {
+      "nanoAOD": "/TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM",
+      "xsec" : "923.6*0.1086*3*(1-0.1086*3)*2"
+    },
+
+    "TTWW": {
+      "nanoAOD": "/TTWW_TuneCP5_13p6TeV_madgraph-madspin-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM",
+      "xsec" : "0.0081651"
+    },
+
+    "TTZZ": {
+      "nanoAOD": "/TTZZ_TuneCP5_13p6TeV_madgraph-madspin-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v3/NANOAODSIM",
+      "xsec" : "0.0015617"
+    },
+
+    "TTLL_MLL-4to50": {
+      "nanoAOD": "/TTLL_MLL-4to50_TuneCP5_13p6TeV_amcatnlo-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM",
+      "xsec" : "0.03949"
+    },
+
+    "TTLL_MLL-50": {
+      "nanoAOD": "/TTLL_MLL-50_TuneCP5_13p6TeV_amcatnlo-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM",
+      "xsec" : "0.08646"
+    },
+
+    "TTLNu": {
+      "nanoAOD": "/TTLNu-1Jets_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v4/NANOAODSIM",
+      "xsec" : "0.2502"
+    },
+
+    "TZQB": {
+      "nanoAOD": "/TZQB-Zto2L-4FS_MLL-30_TuneCP5_13p6TeV_amcatnlo-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM",
+      "xsec" : "0.07968*0.70"
+    },
+
+    "DYto2L-2Jets_MLL-50": {
+      "nanoAOD": "/DYto2L-2Jets_MLL-50_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM",
+      "xsec" : "6345.99"
+    },
+
+    "WToLNu-2Jets": {
+      "nanoAOD": "/WtoLNu-2Jets_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM",
+      "xsec" : "64481.58"
+    },
+
+
+
+
+
+
+    
+
+
+
+    "Muon_Run2022E-Prompt-v1": {
+      "nanoAOD": "/Muon/Run2022E-22Sep2023-v1/NANOAOD"
+    },
+
+    "Muon_Run2022F-Prompt-v1": {
+      "nanoAOD": "/Muon/Run2022F-22Sep2023-v2/NANOAOD"
+    },
+
+    "Muon_Run2022G-Prompt-v1": {
+      "nanoAOD": "/Muon/Run2022G-22Sep2023-v1/NANOAOD"
+    },
+
+
+    "EGamma_Run2022E-Prompt-v1": {
+      "nanoAOD": "/EGamma/Run2022E-22Sep2023-v1/NANOAOD"
+    },
+
+    "EGamma_Run2022F-Prompt-v1": {
+      "nanoAOD": "/EGamma/Run2022F-22Sep2023-v1/NANOAOD"
+    },
+
+    "EGamma_Run2022G-Prompt-v1": {
+      "nanoAOD": "/EGamma/Run2022G-22Sep2023-v2/NANOAOD"
+    },
+
+    
+    "MuonEG_Run2022E-Prompt-v1": {
+      "nanoAOD": "/MuonEG/Run2022E-22Sep2023-v1/NANOAOD"
+    },
+
+    "MuonEG_Run2022F-Prompt-v1": {
+      "nanoAOD": "/MuonEG/Run2022F-22Sep2023-v1/NANOAOD"
+    },
+
+    "MuonEG_Run2022G-Prompt-v1": {
+      "nanoAOD": "/MuonEG/Run2022G-22Sep2023-v1/NANOAOD"
+    }
+
+  }
+}
